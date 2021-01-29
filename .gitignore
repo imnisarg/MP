@@ -1,0 +1,5 @@
+*.mp4
+yolo-coco/yolov3.weights
+input_videos
+output_videos
+example_gif
