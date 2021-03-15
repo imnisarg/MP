@@ -10,14 +10,30 @@ sys.path.insert(1,"/util")
 from util.utilityFuncs import *
 import os
 import pandas as pd
+from matplotlib import pyplot as plt
 
+########## AMBULANCE EMERGENCY VEHICLE USING TEMPLATE DETECTION
+
+def ambulanceDetection(frame):
+    ambulanceCount = 0
+    frame_gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    template = cv2.imread("ambulance.jpeg" , 0)
+    height, width = template.shape[::]
+    res = cv2.matchTemplate(frame_gray , template , cv2.TM_CCOEFF_NORMED)
+    cv2.imshow('frame',res)
+    threshold = 0.8
+    loc = np.where(res>=threshold)
+    for pt in zip(loc[::-1]):
+        ambulanceCount+=1
+    return ambulanceCount
+	
 # Setting Parameters here
 FRAMES_BEFORE_CURRENT = 10 
 inputWidth, inputHeight = 416, 416
 
 list_of_vehicles = predictionClasses()
 # Initialise Pandas DataFrame
-cols = ['Frame Number' , 'Vehicle Count']
+cols = ['Frame Number' , 'Vehicle Count' , 'Emergency Count']
 df = pd.DataFrame(columns = cols)
 # Get the info passed via command line
 LABELS, weightsPath, configPath, inputVideoPath, outputVideoPath,preDefinedConfidence, preDefinedThreshold, USE_GPU= parseCommandLineArguments()
@@ -62,11 +78,12 @@ count = 0
 # loop over frames from the video file stream
 frame_num = list()
 vehicle_detected_count = list()
+emergency_count = list()
 
-
-def appendToList(count,display_vehicle_count):
+def appendToList(count,display_vehicle_count,ambulance_count):
     frame_num.append(count)
     vehicle_detected_count.append(display_vehicle_count)
+    emergency_count.append(ambulance_count)
 while True:
 	
 	num_frames+= 1
@@ -85,7 +102,7 @@ while True:
 	if not grabbed:
 		break
 
-
+	ambulance_count = ambulanceDetection(frame)
 	blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (inputWidth, inputHeight),swapRB=True, crop=False)
 	net.setInput(blob)
 	start = time.time()
@@ -127,7 +144,7 @@ while True:
 		break	
 	
 	previous_frame_detections.pop(0) 
-	previous_frame_detections.append(current_detections) , appendToList(count,display_vehicle_count)
+	previous_frame_detections.append(current_detections) , appendToList(count,display_vehicle_count,ambulance_count)
     
 	
 
@@ -136,6 +153,7 @@ while True:
 
 df[cols[0]] = frame_num
 df[cols[1]] = vehicle_detected_count
+df[cols[2]] = emergency_count
 df.to_csv("Vehicle_Detections.csv" , index = False)
 print("[INFO] cleaning up...")
 writer.release()
