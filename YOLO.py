@@ -154,7 +154,8 @@ while True:
 df[cols[0]] = frame_num
 df[cols[1]] = vehicle_detected_count
 df[cols[2]] = emergency_count
-df.to_csv("Vehicle_Detections.csv" , index = False)
+df.to_csv("Vehicle_Detections_lane2.csv" , index = False)
 print("[INFO] cleaning up...")
 writer.release()
+
 videoStream.release()

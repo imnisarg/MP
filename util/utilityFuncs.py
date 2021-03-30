@@ -73,6 +73,7 @@ def boxInPreviousFrames(previous_frame_detections, current_box, current_detectio
 def count_vehicles(idxs, boxes, classIDs, vehicle_count, previous_frame_detections, frame , LABELS , list_of_vehicles):
 	current_detections = {}
 	curr_detection_count = 0
+	print(list_of_vehicles)
 	if len(idxs) > 0:
 		for i in idxs.flatten():
 			(x, y) = (boxes[i][0], boxes[i][1])
